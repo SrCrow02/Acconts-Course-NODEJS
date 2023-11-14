@@ -27,11 +27,13 @@ function operation() {
         if(action === 'Criar conta'){
             createAccont()
         } else if(action === "Consultar saldo") {
-
+            checkCash()
         } else if(action === "Depositar") {
             deposit()
             
         } else if(action === "Sacar") {
+            withdraw()
+         
             
         } else if(action === "Sair") {
             return;
@@ -146,4 +148,61 @@ function getAccount(accountName){
     })
 
     return JSON.parse(accontJson)
+}
+
+function checkCash(){
+    inquirer.prompt([{
+        name: 'accountName',
+        message: 'Digite o nome da conta:'
+    }]).then((answer) => {
+        const accountName = answer['accountName']
+
+        if(!verifyAccontExists(accountName)){
+            return checkCash()
+        }
+
+        const account = getAccount(accountName)
+        console.log(`O saldo da sua conta é ${account.balance}`)
+        operation()
+    })
+}
+
+function withdraw(){
+    inquirer.prompt([{
+        name: 'accountName',
+        message: 'Digite o nome da conta:'
+    }]).then((answer) => {
+        const accontName = answer['accountName']
+        if(!verifyAccontExists(accontName)){
+            console.log('Erro na digitação do nome!')
+            return operation()
+        }
+
+        inquirer.prompt([{
+            name: 'amount',
+            message: 'Quando voce deseja sacar?'
+        }]).then((answer) => {
+            const amount = answer['amount']
+            console.log('Saque ralizado!')
+
+            removeAccount(accontName, amount)
+        })
+    })
+}
+
+function removeAccount(accountName, amount) {
+    const accont = getAccount(accountName)
+    if(!amount){
+        console.log('Digite um valor')
+        return withdraw()
+    }
+    if(accont < amount) {
+        console.log("Valor indisponivel")
+        return withdraw()
+    }
+
+    accont.balance = parseFloat(accont.balance) - parseFloat(amount)
+
+    console.log("saque realizaado")
+    fs.writeFileSync(`accounts/${accountName}.json`, JSON.stringify(accont))
 }
