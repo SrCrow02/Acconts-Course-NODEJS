@@ -88,6 +88,23 @@ function deposit(){
         if(!verifyAccontExists(accontName)){
             return deposit();
         } 
+
+        inquirer.prompt([{
+            name: 'amount',
+            message: 'Quanto você deseja depositar? '
+        }]).then((answer) => {
+
+            const amount = answer['amount'];
+
+            //add an amount
+            addAmount(accontName, amount)
+            operation()
+
+        }).catch((err) => {
+            console.log(err)
+        })
+
+        
     }).catch((err) => {
         console.log(err)
     })
@@ -100,4 +117,33 @@ function verifyAccontExists(accountName){
     } else {
         return true;
     }
+}
+
+function addAmount(accontName, amount){
+    const account = getAccount(accontName);
+
+    if(!amount){
+        console.log("Ocorreu um erro! Tente novamente mais tarde")
+        return deposit()
+    }
+
+    account.balance = parseFloat(amount) + parseFloat(account.balance);
+
+    fs.writeFileSync(
+        `accounts/${accontName}.json`,
+        JSON.stringify(account)
+
+    )
+
+    console.log("Saldo depositado! no valor de " + amount)
+
+}
+
+function getAccount(accountName){
+    const accontJson = fs.readFileSync(`accounts/${accountName}.json`, {
+        encoding: 'utf8',
+        flag: 'r'
+    })
+
+    return JSON.parse(accontJson)
 }
